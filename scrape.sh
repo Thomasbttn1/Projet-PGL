@@ -1,18 +1,21 @@
 #!/bin/bash
-# scrape.sh : Scraper le prix de l'action AAPL depuis Nasdaq
-# URL de la page de l'action AAPL sur Nasdaq
-URL="https://www.nasdaq.com/market-activity/stocks/aapl"
+# scrap_alpha.sh : Récupérer le cours en temps réel de l'action AAPL via l'API Alpha Vantage
 
-# Récupération du contenu HTML
-HTML=$(curl -s "$URL")
+# Clé API et symbole
+API_KEY="XH0MO0VNE0IFI2K1"
+SYMBOL="AAPL"
 
-# Extraction du prix à partir de la page HTML
-# La regex utilisée ici est indicative et pourra être ajustée selon la structure actuelle du site
-price=$(echo "$HTML" | grep -Po '(?<=<span class="symbol-page-header__pricing-price">\$)[0-9,]+\.[0-9]+')
+# URL de l'API pour obtenir le "Global Quote" de l'action
+URL="https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${SYMBOL}&apikey=${API_KEY}"
 
-# Retirer les éventuelles virgules pour obtenir un nombre correct
-price=$(echo $price | tr -d ',')
+# Récupération du contenu JSON
+JSON=$(curl -s "$URL")
 
+# Extraction du prix à partir du JSON
+# On recherche la valeur associée à "05. price"
+price=$(echo "$JSON" | grep -Po '"05\. price":\s*"\K[0-9.]+')
+
+# Vérification de la présence du prix
 if [ -z "$price" ]; then
   echo "$(date +'%Y-%m-%d %H:%M:%S'),error" >> data.csv
   echo "Prix introuvable"

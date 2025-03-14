@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import pandas as pd
 import plotly.express as px
 
-# Initialisation de l'application Dash
+# Initialisation de l'application Dash 
 app = dash.Dash(__name__)
 server = app.server
 
