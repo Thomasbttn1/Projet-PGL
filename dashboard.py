@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output
@@ -6,18 +7,21 @@ import plotly.express as px
 
 # Initialisation de l'application Dash
 app = dash.Dash(__name__)
-server = app.server  # Pour déploiement éventuel sur un hébergeur
+server = app.server  # Pour déploiement sur un hébergeur éventuel
 
 def load_data():
     """
     Charge les données à partir du fichier CSV.
-    Le fichier CSV est supposé avoir deux colonnes :
-    - timestamp : date et heure d'enregistrement
-    - price : prix scrappé
+    Le fichier CSV doit contenir deux colonnes (sans en-tête) :
+      - timestamp : date et heure d'enregistrement
+      - price : prix scrappé
     """
     try:
+        # Lecture du fichier CSV en attribuant des noms aux colonnes
         df = pd.read_csv('data.csv', names=['timestamp', 'price'])
+        # Conversion de la colonne timestamp en datetime
         df['timestamp'] = pd.to_datetime(df['timestamp'])
+        # Conversion de la colonne price en numérique
         df['price'] = pd.to_numeric(df['price'], errors='coerce')
         return df
     except Exception as e:
@@ -27,33 +31,32 @@ def load_data():
 # Définition du layout de l'application
 app.layout = html.Div([
     html.H1("Dashboard - Prix Apple"),
-    html.Div(id='current-info', style={'fontSize': 24, 'marginBottom': '20px'}),
+    html.Div(id='current-info', style={'fontSize': '24px', 'marginBottom': '20px'}),
     dcc.Graph(id='time-series'),
-    # Intervalle pour rafraîchir le dashboard toutes les 5 minutes (5*60*1000 ms)
+    # Intervalle pour rafraîchir le dashboard toutes les 5 minutes (5*60*1000 millisecondes)
     dcc.Interval(id='interval-component', interval=5*60*1000, n_intervals=0)
 ])
 
-# Callback pour mettre à jour le contenu du dashboard
+# Callback pour mettre à jour l'information actuelle et le graphique
 @app.callback(
     [Output('current-info', 'children'),
      Output('time-series', 'figure')],
-    Input('interval-component', 'n_intervals')
+    [Input('interval-component', 'n_intervals')]
 )
 def update_dashboard(n):
     df = load_data()
     if df.empty:
-        # En cas d'absence de données
         current_info = "Aucune donnée disponible"
         fig = {}
     else:
-        # On récupère la dernière donnée pour afficher le prix actuel
+        # On récupère la dernière entrée pour afficher le prix actuel
         latest = df.iloc[-1]
         current_info = f"Prix actuel : ${latest['price']} à {latest['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}"
-        # Création d'un graphique en ligne pour la série temporelle
+        # Création du graphique avec Plotly Express
         fig = px.line(df, x='timestamp', y='price', title="Évolution du prix Apple")
     return current_info, fig
 
 if __name__ == '__main__':
-    # Démarrage du serveur Dash (accessible par exemple à http://localhost:8050)
+    # Démarrage du serveur Dash (accessible sur http://localhost:8050)
+    # Pour une utilisation en production, pensez à passer debug=False
     app.run_server(debug=True, host='0.0.0.0')
-
