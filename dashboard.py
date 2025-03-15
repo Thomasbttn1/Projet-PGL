@@ -4,11 +4,11 @@ from dash import html, dcc
 from dash.dependencies import Input, Output
 import pandas as pd
 import plotly.express as px
-
+ 
 # Initialisation de l'application Dash
 app = dash.Dash(__name__)
-server = app.server  # Pour déploiement sur un hébergeur éventuel
-
+server = app.server  # Pour déploiement éventuel
+ 
 def load_data():
     """
     Charge les données à partir du fichier CSV.
@@ -17,46 +17,60 @@ def load_data():
       - price : prix scrappé
     """
     try:
-        # Lecture du fichier CSV en attribuant des noms aux colonnes
         df = pd.read_csv('data.csv', names=['timestamp', 'price'])
-        # Conversion de la colonne timestamp en datetime
         df['timestamp'] = pd.to_datetime(df['timestamp'])
-        # Conversion de la colonne price en numérique
         df['price'] = pd.to_numeric(df['price'], errors='coerce')
         return df
     except Exception as e:
         print("Erreur lors du chargement des données :", e)
         return pd.DataFrame(columns=['timestamp', 'price'])
-
+ 
+def load_daily_report():
+    """
+    Charge le rapport quotidien à partir du fichier daily_report.txt.
+    Ce fichier doit être mis à jour quotidiennement (par exemple via cron à 20h).
+    """
+    try:
+        with open('daily_report.txt', 'r') as f:
+            report = f.read()
+    except Exception as e:
+        report = "Daily report non disponible."
+    return report
+ 
 # Définition du layout de l'application
 app.layout = html.Div([
     html.H1("Dashboard - Prix Apple"),
     html.Div(id='current-info', style={'fontSize': '24px', 'marginBottom': '20px'}),
     dcc.Graph(id='time-series'),
-    # Intervalle pour rafraîchir le dashboard toutes les 5 minutes (5*60*1000 millisecondes)
+    html.H2("Rapport Quotidien"),
+    html.Pre(id='daily-report', style={'backgroundColor': '#f4f4f4', 'padding': '10px'}),
+    # Intervalle pour rafraîchir le dashboard toutes les 5 minutes (5*60*1000 ms)
     dcc.Interval(id='interval-component', interval=5*60*1000, n_intervals=0)
 ])
-
-# Callback pour mettre à jour l'information actuelle et le graphique
+ 
+# Callback pour mettre à jour l'information, le graphique et le rapport quotidien
 @app.callback(
     [Output('current-info', 'children'),
-     Output('time-series', 'figure')],
+     Output('time-series', 'figure'),
+     Output('daily-report', 'children')],
     [Input('interval-component', 'n_intervals')]
 )
 def update_dashboard(n):
+    # Mise à jour du prix et du graphique
     df = load_data()
     if df.empty:
         current_info = "Aucune donnée disponible"
         fig = {}
     else:
-        # On récupère la dernière entrée pour afficher le prix actuel
         latest = df.iloc[-1]
         current_info = f"Prix actuel : ${latest['price']} à {latest['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}"
-        # Création du graphique avec Plotly Express
         fig = px.line(df, x='timestamp', y='price', title="Évolution du prix Apple")
-    return current_info, fig
-
+   
+    # Lecture du rapport quotidien
+    daily_report = load_daily_report()
+   
+    return current_info, fig, daily_report
+ 
 if __name__ == '__main__':
-    # Démarrage du serveur Dash (accessible sur http://localhost:8050)
-    # Pour une utilisation en production, pensez à passer debug=False
+    # Pour la production, passez debug=False
     app.run_server(debug=True, host='0.0.0.0')
