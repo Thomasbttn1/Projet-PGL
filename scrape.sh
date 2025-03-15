@@ -13,7 +13,8 @@ JSON=$(curl -s "$URL")
 
 # Extraction du prix à partir du JSON
 # On recherche la valeur associée à "05. price"
-price=$(echo "$JSON" | grep -Po '"05\. price":\s*"\K[0-9.]+')
+# price=$(echo "$JSON" | grep -Po '"05\. price":\s*"\K[0-9.]+')
+price=$(echo "$JSON" | sed -n 's/.*"05\. price": *"\([0-9.]*\)".*/\1/p')
 
 # Vérification de la présence du prix
 if [ -z "$price" ]; then
