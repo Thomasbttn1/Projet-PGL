@@ -4,6 +4,12 @@
 # Clé API et symbole
 API_KEY="XH0MO0VNE0IFI2K1"
 SYMBOL="AAPL"
+INTERVAL=60
+OUTPUT_FILE="dataPGL.csv"
+
+if [ ! -f "$OUTPUT_FILE" ]; then
+  echo "timestamp,price" > "$OUTPUT_FILE"
+fi
 
 # URL de l'API pour obtenir le "Global Quote" de l'action
 URL="https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${SYMBOL}&apikey=${API_KEY}"
