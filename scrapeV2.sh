@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# Appel API
 response=$(curl -s https://api.dydx.exchange/v3/markets)
 
-# Extraction du prix de BTC-USD avec grep et sed
-price=$(echo "$response" | grep -o '"BTC-USD":{".*' | sed 's/.*"indexPrice":"\([^"]*\)".*/\1/')
+# On isole proprement le bloc "BTC-USD"
+btc_block=$(echo "$response" | tr -d '\n' | grep -o '"BTC-USD":{[^}]*}')
 
-# Affichage du prix
+# Ensuite on extrait "indexPrice" à l'intérieur de ce bloc
+price=$(echo "$btc_block" | sed -n 's/.*"indexPrice":"\([^"]*\)".*/\1/p')
+
 echo "$price"
