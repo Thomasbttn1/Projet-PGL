@@ -1,11 +1,11 @@
 #!/bin/bash
 
-response=$(curl -s https://api.dydx.exchange/v3/markets)
+response=$(curl -s "http://api.currencylayer.com/live?access_key=97f7a70ab5e00669fab149aadd6393c6&currencies=EUR")
 
-# On isole proprement le bloc "BTC-USD"
-btc_block=$(echo "$response" | tr -d '\n' | grep -o '"BTC-USD":{[^}]*}')
+# Extraire le taux USDEUR (ex: "USDEUR":0.9245)
+usdeur=$(echo "$response" | grep -o '"USDEUR":[0-9\.]*' | sed 's/[^0-9\.]*//g')
 
-# Ensuite on extrait "indexPrice" à l'intérieur de ce bloc
-price=$(echo "$btc_block" | sed -n 's/.*"indexPrice":"\([^"]*\)".*/\1/p')
+# Inverser pour obtenir EUR/USD
+eurusd=$(echo "scale=6; 1 / $usdeur" | bc -l)
 
-echo "$price"
+echo "$eurusd"
