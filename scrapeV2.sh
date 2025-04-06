@@ -1,29 +1,29 @@
 #!/bin/bash
-# scrapeV2.sh : Scrape le taux EUR/USD depuis Currencylayer une seule fois
-
-API_KEY="97f7a70ab5e00669fab149aadd6393c6"
+# Nouveau scraper EUR/USD via exchangerate.host
+ 
 OUTPUT_FILE="data2.csv"
-
 cd /home/ubuntu/Projet-PGL
 source venv/bin/activate
-
-# Création du fichier si inexistant
+ 
+# Créer le fichier si besoin
 if [ ! -f "$OUTPUT_FILE" ]; then
   echo "timestamp,eurusd" > "$OUTPUT_FILE"
 fi
-
-# Appel API Currencylayer pour le taux EUR
-JSON=$(curl -s "http://api.currencylayer.com/live?access_key=${API_KEY}&currencies=EUR")
-
-# Extraction du taux USDEUR
-usdeur=$(echo "$JSON" | grep -o '"USDEUR":[0-9\.]*' | sed 's/[^0-9\.]*//g')
-
-# Vérification de la validité du taux
-if [ -z "$usdeur" ]; then
+ 
+# Appel API gratuite
+JSON=$(curl -s "https://api.exchangerate.host/latest?base=EUR&symbols=USD")
+ 
+# Extraire le taux
+eurusd=$(echo "$JSON" | grep -o '"USD":[0-9\.]*' | sed 's/[^0-9\.]*//g')
+ 
+# Vérifie si on a bien récupéré le taux
+if [ -z "$eurusd" ]; then
   echo "$(date +'%Y-%m-%d %H:%M:%S'),error" >> "$OUTPUT_FILE"
-  echo "Erreur : USDEUR introuvable"
+  echo "❌ Erreur : EUR/USD introuvable"
 else
-  # Conversion en EUR/USD
+  echo "$(date +'%Y-%m-%d %H:%M:%S'),$eurusd" >> "$OUTPUT_FILE"
+  echo "✅ EUR/USD scrappé : $eurusd"
+fi
   eurusd=$(echo "scale=6; 1 / $usdeur" | bc -l)
   echo "$(date +'%Y-%m-%d %H:%M:%S'),$eurusd" >> "$OUTPUT_FILE"
   echo "EUR/USD scrappé : $eurusd"
