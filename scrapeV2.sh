@@ -1,8 +1,6 @@
 #!/bin/bash
 
-API_KEY="7ebb645e5e2d654c494d427b4fea6870"
 OUTPUT_FILE="data2.csv"
-
 cd /home/ubuntu/Projet-PGL
 source venv/bin/activate
 
@@ -11,9 +9,10 @@ if [ ! -f "$OUTPUT_FILE" ]; then
   echo "timestamp,eurusd" > "$OUTPUT_FILE"
 fi
 
-# Appel API avec la bonne clé
-eurusd=$(curl -s "https://api.exchangerate.host/latest?base=EUR&symbols=USD&access_key=${API_KEY}" | jq -r '.rates.USD')
+# Appel API FastForex
+eurusd=$(curl -s "https://api.fastforex.io/fetch-one?from=EUR&to=USD&api_key=demo" | jq -r '.result.USD')
 
+# Timestamp
 now=$(date +'%Y-%m-%d %H:%M:%S')
 
 if [[ -z "$eurusd" || "$eurusd" == "null" ]]; then
