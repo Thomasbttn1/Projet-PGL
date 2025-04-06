@@ -1,17 +1,20 @@
 #!/bin/bash
-# daily_report.sh : Génère un rapport quotidien à partir du fichier data2.csv (EUR/USD)
+# daily_report.sh : Génère un rapport quotidien propre à partir de data2.csv
 
 INPUT_FILE="data2.csv"
 OUTPUT_FILE="daily_report.txt"
 today=$(date +'%Y-%m-%d')
 
-data=$(grep "^$today" "$INPUT_FILE")
+# Filtrer les lignes du jour + ignorer les lignes "error" ou vides
+data=$(grep "^$today" "$INPUT_FILE" | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2},[0-9\.]+$')
 
+# Si aucune donnée valide
 if [ -z "$data" ]; then
-    echo "Aucune donnée pour aujourd'hui ($today)" > "$OUTPUT_FILE"
+    echo "Aucune donnée valide pour aujourd'hui ($today)" > "$OUTPUT_FILE"
     exit 0
 fi
 
+# Calculs sur données valides
 open=$(echo "$data" | head -n 1 | cut -d',' -f2)
 close=$(echo "$data" | tail -n 1 | cut -d',' -f2)
 max=$(echo "$data" | cut -d',' -f2 | sort -nr | head -n 1)
@@ -30,4 +33,4 @@ evolution=$(echo "scale=4; (($close - $open) / $open) * 100" | bc -l)
   echo "Évolution        : $evolution %"
 } > "$OUTPUT_FILE"
 
-echo "Rapport quotidien généré dans $OUTPUT_FILE"
+echo "✅ Rapport quotidien généré dans $OUTPUT_FILE"
