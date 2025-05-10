@@ -1,7 +1,7 @@
 #!/bin/bash
-# Scraper EUR/USD via FastForex avec clé API perso
+# Scraper EUR/USD via FastForex avec nouvelle clé API
 
-API_KEY="d9f9b7f68e-620d1636aa-sub8cr"
+API_KEY="M25AKAQAPI4XT2MS"
 OUTPUT_FILE="data2.csv"
 
 cd /home/ubuntu/Projet-PGL
