@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script pour récupérer le taux EUR/USD via FastForex API
 
-API_KEY="M25AKAQAPI4XT2MS"
+API_KEY="a94d110a8f-47df5e67bd-sw1pb7"
 OUTPUT_FILE="data2.csv"
 URL="https://api.fastforex.io/fetch-one?from=EUR&to=USD&api_key=${API_KEY}"
 
